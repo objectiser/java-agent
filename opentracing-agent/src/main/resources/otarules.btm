@@ -12,3 +12,27 @@ IF TRUE
 DO
   io.opentracing.contrib.agent.OpenTracingManager.loadRules($0);
 ENDRULE
+
+
+#RULE ClassLoadMonitor trace create
+#CLASS java.lang.ClassLoader
+#METHOD defineClass(String, byte[], int, int, ProtectionDomain)
+#AT EXIT
+#IF TRUE
+#DO
+  #System.out.println("*** Called defineClass(" + $1 + ") in thread " + Thread.currentThread().getName() + " cl = " + $0);
+  #traceStack("*** Called defineClass(" + $1 + ") in thread " + Thread.currentThread().getName() + " cl = " + $0, 15);
+#ENDRULE
+
+
+
+RULE Module getClassLoader
+CLASS org.jboss.modules.Module
+METHOD getClassLoader
+AT EXIT
+IF $0.getIdentifier().getName().startsWith("deployment.")
+DO
+  System.out.println("*** MODULE getClassLoader module="+$0);
+  io.opentracing.contrib.agent.OpenTracingManager.loadRules($!);
+ENDRULE
+

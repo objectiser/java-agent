@@ -68,7 +68,9 @@ public class OpenTracingManager {
 
         // Load default and custom rules
         try {
+System.out.println("GPB: GET AGENT RULES.....");
             Enumeration<URL> iter = classLoader.getResources(AGENT_RULES);
+System.out.println("GPB: ITER = "+iter);
             while (iter.hasMoreElements()) {
                 loadRules(iter.nextElement().toURI(), scriptNames, scripts);
             }
