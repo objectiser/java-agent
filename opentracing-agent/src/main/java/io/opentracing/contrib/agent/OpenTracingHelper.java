@@ -29,7 +29,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.spanmanager.DefaultSpanManager;
-import io.opentracing.contrib.spanmanager.SpanManager;
 import io.opentracing.contrib.spanmanager.SpanManager.ManagedSpan;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.propagation.Format;
@@ -41,7 +40,6 @@ import io.opentracing.util.GlobalTracer;
 public class OpenTracingHelper extends Helper {
 
     private static Tracer tracer;
-    private static final SpanManager spanManager = DefaultSpanManager.getInstance();
 
     private static final Map<Object,Span> spanAssociations = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
     private static final Map<Object,Span> finished = Collections.synchronizedMap(new WeakHashMap<Object,Span>());
@@ -95,7 +93,7 @@ public class OpenTracingHelper extends Helper {
      * @param span The span
      */
     public void activateSpan(Span span) {
-        spanManager.activate(span);
+        DefaultSpanManager.getInstance().activate(span);
     }
 
     /**
@@ -104,7 +102,7 @@ public class OpenTracingHelper extends Helper {
      * @return The current span, or null if no active span exists
      */
     public Span currentSpan() {
-        return spanManager.current().getSpan();
+        return DefaultSpanManager.getInstance().current().getSpan();
     }
 
     /**
@@ -117,7 +115,7 @@ public class OpenTracingHelper extends Helper {
      * @return The span being deactivated, or null if no active span found
      */
     public Span deactivateCurrentSpan() {
-        ManagedSpan current = spanManager.current();
+        ManagedSpan current = DefaultSpanManager.getInstance().current();
         current.deactivate();
         return current.getSpan();
     }
