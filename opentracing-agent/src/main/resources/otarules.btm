@@ -14,25 +14,21 @@ DO
 ENDRULE
 
 
-#RULE ClassLoadMonitor trace create
-#CLASS java.lang.ClassLoader
-#METHOD defineClass(String, byte[], int, int, ProtectionDomain)
-#AT EXIT
-#IF TRUE
-#DO
-  #System.out.println("*** Called defineClass(" + $1 + ") in thread " + Thread.currentThread().getName() + " cl = " + $0);
-  #traceStack("*** Called defineClass(" + $1 + ") in thread " + Thread.currentThread().getName() + " cl = " + $0, 15);
-#ENDRULE
+# This rule is required to bootstrap any ByteMan rules contained within a deployment (e.g. war)
+# including in any nested jars.
 
-
+# State 0 - module has not been scanned
+# State 1 - module has been scanned
 
 RULE Module getClassLoader
 CLASS org.jboss.modules.Module
 METHOD getClassLoader
+HELPER io.opentracing.contrib.agent.OpenTracingHelper
 AT EXIT
-IF $0.getIdentifier().getName().startsWith("deployment.")
+IF $0.getIdentifier().getName().startsWith("deployment.") && getState($0) == 0
 DO
   System.out.println("*** MODULE getClassLoader module="+$0);
   io.opentracing.contrib.agent.OpenTracingManager.loadRules($!);
+  setState($0, 1);
 ENDRULE
 
